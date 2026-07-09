@@ -425,5 +425,9 @@
     "Gemini Models": "Gemini 模型",
     "Weekly Limit": "每週限制",
     "Five Hour Limit": "五小時限制",
-    "Claude and GPT models": "Claude 和 GPT 模型"
+    "Claude and GPT models": "Claude 和 GPT 模型",
+    "Conversation Width": "對話寬度",
+    "Configure the maximum width of the conversation panel.": "設定對話面板的最大寬度。",
+    "Narrow": "窄",
+    "Wide": "寬"
 }
