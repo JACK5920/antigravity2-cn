@@ -122,7 +122,8 @@ function normalizeText(text) {
                .replace(/’/g, "'")
                .replace(/‘/g, "'")
                .replace(/“/g, '"')
-               .replace(/”/g, '"');
+               .replace(/”/g, '"')
+               .replace(/…/g, '...');
 }
 
 function loadDictionary() {
@@ -173,12 +174,12 @@ function generateJs() {
     const translatedValues = new WeakMap();
 
     // 禁区类名/属性特征
-    const BLOCKED_CLASSES = ['monaco-editor', 'editor-container', 'terminal', 'output-view', 'debug-console', 'code-view', 'artifact-container', 'suggest-widget'];
+    const BLOCKED_CLASSES = ['monaco-editor', 'editor-container', 'terminal', 'output-view', 'debug-console', 'code-view', 'artifact-container', 'suggest-widget', 'chat-bubble', 'chat-message', 'chat-line', 'chat-msg', 'message-item', 'conversation-item', 'chat-history', 'chat-container', 'chat-pane', 'ai-chat-bubble', 'user-chat-bubble'];
     const BLOCKED_TAGS = ['SCRIPT', 'STYLE', 'CODE', 'PRE', 'INPUT', 'TEXTAREA', 'SVG', 'CANVAS', 'SYMBOL', 'PATH'];
 
     function norm(s) {
         if (!s) return '';
-        return s.replace(/\\s+/g, ' ').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').trim();
+        return s.replace(/\\s+/g, ' ').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/…/g, '...').trim();
     }
 
     function translateWithShortcut(val) {
@@ -210,10 +211,42 @@ function generateJs() {
                 const tag = curr.tagName.toUpperCase();
                 if (BLOCKED_TAGS.includes(tag)) return true;
                 if (curr.getAttribute('contenteditable') === 'true') return true;
+
+                // 阻断常见的角色属性标识，如 data-role="user", data-author="user"
+                const dataRole = curr.getAttribute('data-role');
+                if (dataRole && /^(user|human|client|customer|my)$/i.test(dataRole)) return true;
+                const dataAuthor = curr.getAttribute('data-author');
+                if (dataAuthor && /^(user|human|client|customer|my)$/i.test(dataAuthor)) return true;
                 
+                // 阻断 ID 包含 chat, conversation, interactive 的容器
+                const id = curr.id || '';
+                if (typeof id === 'string') {
+                    const idLower = id.toLowerCase();
+                    if (idLower.includes('chat') || idLower.includes('conversation') || idLower.includes('interactive')) return true;
+                }
+
+                // 阻断 aria-label 包含 Chat, AI, Ask, conversation, interactive 的容器
+                const ariaLabel = curr.getAttribute('aria-label') || '';
+                if (ariaLabel) {
+                    const alLower = ariaLabel.toLowerCase();
+                    if (alLower.includes('chat') || alLower.includes('ai') || alLower.includes('ask') || alLower.includes('conversation') || alLower.includes('interactive')) return true;
+                }
+
                 const className = curr.className || '';
                 if (typeof className === 'string') {
                     if (BLOCKED_CLASSES.some(cls => className.includes(cls))) return true;
+
+                    const clsLower = className.toLowerCase();
+                    // 阻断类名包含 chat, conversation, interactive 的容器
+                    if (clsLower.includes('chat') || clsLower.includes('conversation') || clsLower.includes('interactive')) return true;
+
+                    // 阻断各类用户/助理聊天消息气泡的变体
+                    if (/(^|\b|[-_])(user|human|client|customer|my|ai|bot|assistant)([-_]?(message|msg|bubble|query|chat|input|text|content))(\b|$)/i.test(className)) {
+                        return true;
+                    }
+                    if (/(^|\b|[-_])(message|msg|bubble|query|chat|input|text|content)([-_]?(user|human|client|customer|my|ai|bot|assistant))(\b|$)/i.test(className)) {
+                        return true;
+                    }
                 }
             }
             curr = curr.parentElement || (curr.parentNode && curr.parentNode.host); // 支持 Shadow DOM 穿透
@@ -328,121 +361,139 @@ function generateJs() {
                     newVal = map.get(valNorm);
                 } else if (lowerMap.has(valLower)) {
                     newVal = lowerMap.get(valLower);
-                } else if (/^Refreshes in (\\d+) days?, (\\d+) hours?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^Refreshes in (\\d+) days?, (\\d+) hours?$/i, (match, d, h) => {
-                        return ${USE_TW ? 'd + " 天 " + h + " 小時後更新"' : 'd + " 天 " + h + " 小时后刷新"'};
+                } else if (/^The AlloyDB for PostgreSQL remote/i.test(valNorm)) {
+                    newVal = USE_TW ? "AlloyDB for PostgreSQL 遠端 MCP 伺服器可讓您存取並執行 AlloyDB 工具，用於管理 AlloyDB 叢集及執行個體、管理使用者，以及建立和復原資料備份。" : "AlloyDB for PostgreSQL 远程 MCP 服务器可让您访问并运行 AlloyDB 工具，用于管理 AlloyDB 集群及实例、管理用户，以及创建和恢复数据备份。";
+                } else if (/^The Cloud SQL remote/i.test(valNorm)) {
+                    newVal = USE_TW ? "Cloud SQL 遠端 MCP 伺服器可讓您存取並執行 Cloud SQL 工具，用於管理 Cloud SQL 執行個體、管理使用者、建立和復原資料備份及資料庫維運。" : "Cloud SQL 远程 MCP 服务器可让您访问并运行 Cloud SQL 工具，用于管理 Cloud SQL 实例、管理用户、创建和恢复数据备份及数据库运维。";
+                } else if (/^The Spanner remote/i.test(valNorm)) {
+                    newVal = USE_TW ? "Spanner 遠端 MCP 伺服器可讓您從 AI 開發環境中存取並執行 Spanner 工具，以建立、管理和查詢分散式資料庫資源。" : "Spanner 远程 MCP 服务器可让您从 AI 开发环境中访问并运行 Spanner 工具，以创建、管理和查询分布式数据库资源。";
+                } else if (/^Refreshes in (\d+) days?, (\d+) hours?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Refreshes in (\d+) days?, (\d+) hours?$/i, (match, d, h) => {
+                        return USE_TW ? (d + " 天 " + h + " 小時後更新") : (d + " 天 " + h + " 小时后刷新");
                     });
-                } else if (/^Refreshes in (\\d+) hours?, (\\d+) minutes?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^Refreshes in (\\d+) hours?, (\\d+) minutes?$/i, (match, h, m) => {
-                        return ${USE_TW ? 'h + " 小時 " + m + " 分鐘後更新"' : 'h + " 小时 " + m + " 分钟后刷新"'};
+                } else if (/^Refreshes in (\d+) hours?, (\d+) minutes?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Refreshes in (\d+) hours?, (\d+) minutes?$/i, (match, h, m) => {
+                        return USE_TW ? (h + " 小時 " + m + " 分鐘後更新") : (h + " 小时 " + m + " 分钟后刷新");
                     });
-                } else if (/^Refreshes in (\\d+) days?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^Refreshes in (\\d+) days?$/i, (match, d) => {
-                        return ${USE_TW ? 'd + " 天後更新"' : 'd + " 天后刷新"'};
+                } else if (/^Refreshes in (\d+) days?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Refreshes in (\d+) days?$/i, (match, d) => {
+                        return USE_TW ? (d + " 天後更新") : (d + " 天后刷新");
                     });
-                } else if (/^Refreshes in (\\d+) hours?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^Refreshes in (\\d+) hours?$/i, (match, h) => {
-                        return ${USE_TW ? 'h + " 小時後更新"' : 'h + " 小时后刷新"'};
+                } else if (/^Refreshes in (\d+) hours?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Refreshes in (\d+) hours?$/i, (match, h) => {
+                        return USE_TW ? (h + " 小時後更新") : (h + " 小时后刷新");
                     });
-                } else if (/^Refreshes in (\\d+) minutes?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^Refreshes in (\\d+) minutes?$/i, (match, m) => {
-                        return ${USE_TW ? 'm + " 分鐘後更新"' : 'm + " 分钟后刷新"'};
+                } else if (/^Refreshes in (\d+) minutes?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Refreshes in (\d+) minutes?$/i, (match, m) => {
+                        return USE_TW ? (m + " 分鐘後更新") : (m + " 分钟后刷新");
                     });
-                } else if (/^You have used some of your weekly limit, it will fully refresh in (\\d+) days?, (\\d+) hours?\\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\\d+) days?, (\\d+) hours?\\.?$/i, (match, d, h) => {
-                        return ${USE_TW ? '"您已使用了部分每週限制，將在 " + d + " 天 " + h + " 小時後完全更新。"' : '"您已使用了部分每周限制，将在 " + d + " 天 " + h + " 小时后完全刷新。"'};
+                } else if (/^You have used some of your weekly limit, it will fully refresh in (\d+) days?, (\d+) hours?\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\d+) days?, (\d+) hours?\.?$/i, (match, d, h) => {
+                        return USE_TW ? ("您已使用了部分每週限制，將在 " + d + " 天 " + h + " 小時後完全更新。") : ("您已使用了部分每周限制，将在 " + d + " 天 " + h + " 小时后完全刷新。");
                     });
-                } else if (/^You have used some of your weekly limit, it will fully refresh in (\\d+) days?\\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\\d+) days?\\.?$/i, (match, d) => {
-                        return ${USE_TW ? '"您已使用了部分每週限制，將在 " + d + " 天後完全更新。"' : '"您已使用了部分每周限制，将在 " + d + " 天后完全刷新。"'};
+                } else if (/^You have used some of your weekly limit, it will fully refresh in (\d+) days?\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\d+) days?\.?$/i, (match, d) => {
+                        return USE_TW ? ("您已使用了部分每週限制，將在 " + d + " 天後完全更新。") : ("您已使用了部分每周限制，将在 " + d + " 天后完全刷新。");
                     });
-                } else if (/^You have used some of your weekly limit, it will fully refresh in (\\d+) hours?\\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\\d+) hours?\\.?$/i, (match, h) => {
-                        return ${USE_TW ? '"您已使用了部分每週限制，將在 " + h + " 小時後完全更新。"' : '"您已使用了部分每周限制，将在 " + h + " 小时后完全刷新。"'};
+                } else if (/^You have used some of your weekly limit, it will fully refresh in (\d+) hours?\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\d+) hours?\.?$/i, (match, h) => {
+                        return USE_TW ? ("您已使用了部分每週限制，將在 " + h + " 小時後完全更新。") : ("您已使用了部分每周限制，将在 " + h + " 小时后完全刷新。");
                     });
-                } else if (/^You have used some of your weekly limit, it will fully refresh in (\\d+) minutes?\\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\\d+) minutes?\\.?$/i, (match, m) => {
-                        return ${USE_TW ? '"您已使用了部分每週限制，將在 " + m + " 分鐘後完全更新。"' : '"您已使用了部分每周限制，将在 " + m + " 分钟后完全刷新。"'};
+                } else if (/^You have used some of your weekly limit, it will fully refresh in (\d+) minutes?\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\d+) minutes?\.?$/i, (match, m) => {
+                        return USE_TW ? ("您已使用了部分每週限制，將在 " + m + " 分鐘後完全更新。") : ("您已使用了部分每周限制，将在 " + m + " 分钟后完全刷新。");
                     });
-                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\\d+) hours?, (\\d+) minutes?\\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\\d+) hours?, (\\d+) minutes?\\.?$/i, (match, h, m) => {
-                        return ${USE_TW ? '"您已使用了部分 5 小時限制，將在 " + h + " 小時 " + m + " 分鐘後完全更新。"' : '"您已使用了部分 5 小时限制，将在 " + h + " 小时 " + m + " 分钟后完全刷新。"'};
+                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\d+) hours?, (\d+) minutes?\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\d+) hours?, (\d+) minutes?\.?$/i, (match, h, m) => {
+                        return USE_TW ? ("您已使用了部分 5 小時限制，將在 " + h + " 小時 " + m + " 分鐘後完全更新。") : ("您已使用了部分 5 小时限制，将在 " + h + " 小时 " + m + " 分钟后完全刷新。");
                     });
-                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\\d+) hours?\\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\\d+) hours?\\.?$/i, (match, h) => {
-                        return ${USE_TW ? '"您已使用了部分 5 小時限制，將在 " + h + " 小時後完全更新。"' : '"您已使用了部分 5 小时限制，将在 " + h + " 小时后完全刷新。"'};
+                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\d+) hours?\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\d+) hours?\.?$/i, (match, h) => {
+                        return USE_TW ? ("您已使用了部分 5 小時限制，將在 " + h + " 小時後完全更新。") : ("您已使用了部分 5 小时限制，将在 " + h + " 小时后完全刷新。");
                     });
-                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\\d+) minutes?\\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\\d+) minutes?\\.?$/i, (match, m) => {
-                        return ${USE_TW ? '"您已使用了部分 5 小時限制，將在 " + m + " 分鐘後完全更新。"' : '"您已使用了部分 5 小时限制，将在 " + m + " 分钟后完全刷新。"'};
+                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\d+) minutes?\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\d+) minutes?\.?$/i, (match, m) => {
+                        return USE_TW ? ("您已使用了部分 5 小時限制，將在 " + m + " 分鐘後完全更新。") : ("您已使用了部分 5 小时限制，将在 " + m + " 分钟后完全刷新。");
                     });
                 } else if (/^Learn more about (.+)$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^Learn more about (.+)$/i, (match, p) => {
                         let translatedPreset = p;
-                        if (p.toLowerCase() === 'default') translatedPreset = ${USE_TW ? '"預設 (Default)"' : '"默认 (Default)"'};
-                        else if (p.toLowerCase() === 'full machine') translatedPreset = ${USE_TW ? '"全機存取 (Full Machine)"' : '"全机访问 (Full Machine)"'};
-                        else if (p.toLowerCase() === 'turbo mode') translatedPreset = ${USE_TW ? '"極速模式 (Turbo Mode)"' : '"极速模式 (Turbo Mode)"'};
-                        else if (p.toLowerCase() === 'custom') translatedPreset = ${USE_TW ? '"自訂 (Custom)"' : '"自定义 (Custom)"'};
-                        return ${USE_TW ? '"瞭解更多關於 " + translatedPreset + " 的詳細資訊"' : '"了解更多关于 " + translatedPreset + " 的信息"'};
+                        if (p.toLowerCase() === 'default') translatedPreset = USE_TW ? "預設 (Default)" : "默认 (Default)";
+                        else if (p.toLowerCase() === 'full machine') translatedPreset = USE_TW ? "全機存取 (Full Machine)" : "全机访问 (Full Machine)";
+                        else if (p.toLowerCase() === 'turbo mode') translatedPreset = USE_TW ? "極速模式 (Turbo Mode)" : "极速模式 (Turbo Mode)";
+                        else if (p.toLowerCase() === 'custom') translatedPreset = USE_TW ? "自訂 (Custom)" : "自定义 (Custom)";
+                        return USE_TW ? ("瞭解更多關於 " + translatedPreset + " 的詳細資訊") : ("了解更多关于 " + translatedPreset + " 的信息");
                     });
                 } else if (/^Yes, and always allow '(.+)' in this project$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^Yes, and always allow '(.+)' in this project$/i, (match, cmd) => {
-                        return ${USE_TW ? '"是，且在此專案中一律允許執行 \'" + cmd + "\'"' : '"是，且在此项目中始终允许运行 \'" + cmd + "\'"'};
+                        return USE_TW ? ("是，且在此專案中一律允許執行 '" + cmd + "'") : ("是，且在此项目中始终允许运行 '" + cmd + "'");
                     });
                 } else if (/^Yes, and always allow '(.+)'$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^Yes, and always allow '(.+)'$/i, (match, cmd) => {
-                        return ${USE_TW ? '"是，且一律允許執行 \'" + cmd + "\'"' : '"是，且始终允许运行 \'" + cmd + "\'"'};
+                        return USE_TW ? ("是，且一律允許執行 '" + cmd + "'") : ("是，且始终允许运行 '" + cmd + "'");
                     });
                 } else if (/^(\\d+) tools? enabled$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^(\\d+) tools? enabled$/i, (match, num) => {
-                        return ${USE_TW ? 'num + " 個工具已啟用"' : 'num + " 个工具已启用"'};
+                        return USE_TW ? (num + " 個工具已啟用") : (num + " 个工具已启用");
                     });
-                } else if (/^Show (\\d+) more(\\.\\.\\.|…)?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^Show (\\d+) more(\\.\\.\\.|…)?$/i, (match, num) => {
-                        return ${USE_TW ? '"顯示另外 " + num + " 個..."' : '"显示另外 " + num + " 个..."'};
+                } else if (/^Show (\d+) more(\.\.\.|…)?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Show (\d+) more(\.\.\.|…)?$/i, (match, num) => {
+                        return USE_TW ? ("顯示另外 " + num + " 個...") : ("显示另外 " + num + " 个...");
                     });
-                } else if (/^See all \\((\\d+)\\)$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^See all \\((\\d+)\\)$/i, (match, num) => {
-                        return ${USE_TW ? '"顯示全部 (" + num + ")"' : '"显示全部 (" + num + ")"'};
+                } else if (/^See all \((\d+)\)$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^See all \((\d+)\)$/i, (match, num) => {
+                        return USE_TW ? ("顯示全部 (" + num + ")") : ("显示全部 (" + num + ")");
                     });
-                } else if (/^Available AI Credits: (\\d+)$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^Available AI Credits: (\\d+)$/i, (match, num) => {
-                        return ${USE_TW ? '"可用 AI 額度: " + num' : '"可用 AI 额度: " + num'};
+                } else if (/^Available AI Credits: (\d+)$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Available AI Credits: (\d+)$/i, (match, num) => {
+                        return USE_TW ? ("可用 AI 額度: " + num) : ("可用 AI 额度: " + num);
                     });
-                } else if (/^Version\\s+([\\d\\.]+)$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^Version\\s+([\\d\\.]+)$/i, (match, v) => {
+                } else if (/^Version\s+([\d\.]+)$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Version\s+([\d\.]+)$/i, (match, v) => {
                         return "版本 " + v;
                     });
-                } else if (/^(\\d+)(s|m|h|d|w|mo|yr)$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^(\\d+)(s|m|h|d|w|mo|yr)$/i, (match, num, unit) => {
+                } else if (/^(\d+)(s|m|h|d|w|mo|yr)$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^(\d+)(s|m|h|d|w|mo|yr)$/i, (match, num, unit) => {
                         const unitLower = unit.toLowerCase();
                         let unitStr = "";
-                        if (unitLower === "s") unitStr = ${USE_TW ? '"秒前"' : '"秒前"'};
-                        else if (unitLower === "m") unitStr = ${USE_TW ? '"分鐘前"' : '"分钟前"'};
-                        else if (unitLower === "h") unitStr = ${USE_TW ? '"小時前"' : '"小时前"'};
-                        else if (unitLower === "d") unitStr = ${USE_TW ? '"天前"' : '"天前"'};
-                        else if (unitLower === "w") unitStr = ${USE_TW ? '"週前"' : '"周前"'};
-                        else if (unitLower === "mo") unitStr = ${USE_TW ? '"個月前"' : '"个月前"'};
-                        else if (unitLower === "yr") unitStr = ${USE_TW ? '"年前"' : '"年前"'};
+                        if (unitLower === "s") unitStr = USE_TW ? "秒前" : "秒前";
+                        else if (unitLower === "m") unitStr = USE_TW ? "分鐘前" : "分钟前";
+                        else if (unitLower === "h") unitStr = USE_TW ? "小時前" : "小时前";
+                        else if (unitLower === "d") unitStr = USE_TW ? "天前" : "天前";
+                        else if (unitLower === "w") unitStr = USE_TW ? "週前" : "周前";
+                        else if (unitLower === "mo") unitStr = USE_TW ? "個月前" : "个月前";
+                        else if (unitLower === "yr") unitStr = USE_TW ? "年前" : "年前";
                         return num + unitStr;
                     });
                 } else if (/^(.+?): context deadline exceeded$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^(.+?): context deadline exceeded$/i, (match, prefix) => {
-                        return prefix + ${USE_TW ? '": 請求超時 (context deadline exceeded)"' : '": 请求超时 (context deadline exceeded)"'};
+                        return prefix + (USE_TW ? ": 請求超時 (context deadline exceeded)" : ": 请求超时 (context deadline exceeded)");
                     });
                 } else if (/^(.+?): i\\/o timeout$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^(.+?): i\\/o timeout$/i, (match, prefix) => {
-                        return prefix + ${USE_TW ? '": I\\/O 超時 (i\\/o timeout)"' : '": I\\/O 超时 (i\\/o timeout)"'};
+                        return prefix + (USE_TW ? ": I/O 超時 (i/o timeout)" : ": I/O 超时 (i/o timeout)");
                     });
                 } else if (/^Are you sure you want to delete (the |this )?project (.+?)\\??$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^Are you sure you want to delete (the |this )?project (.+?)\\??$/i, (match, article, name) => {
-                        return ${USE_TW ? '"您確定要刪除專案 " + name + " 嗎？"' : '"您确定要删除项目 " + name + " 吗？"'};
+                        return USE_TW ? ("您確定要刪除專案 " + name + " 嗎？") : ("您确定要删除项目 " + name + " 吗？");
+                    });
+                } else if (/^The (.+?) remote MCP server lets you access and run (.+?) tools to (.+)$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^The (.+?) remote MCP server lets you access and run (.+?) tools to (.+)$/i, (match, name, tools, action) => {
+                        return name + (USE_TW ? " 遠端 MCP 伺服器可讓您存取並執行 " : " 远程 MCP 服务器可让您访问并运行 ") + tools + (USE_TW ? " 工具以進行管理與操作。" : " 工具以进行管理与操作。");
+                    });
+                } else if (/^The (.+?) remote MCP server lets you manage (.+) resources\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^The (.+?) remote MCP server lets you manage (.+) resources\.?$/i, (match, name, res) => {
+                        return name + (USE_TW ? " 遠端 MCP 伺服器可讓您管理 " : " 远程 MCP 服务器可让您管理 ") + res + (USE_TW ? " 資源。" : " 资源。");
                     });
                 } else {
-                    // 2. 长句子串滑动替换
+                    // 2. 长句子串滑动替换与前缀截断智能匹配 (缩短至前 18 字符即可高精度命中)
                     for (const [key, translated] of longEntries) {
-                        if (key.length > 20 && valNorm.includes(key)) {
+                        if (key.length > 15 && valNorm.includes(key)) {
                             newVal = newVal.split(key).join(translated);
+                            break;
+                        } else if (key.length >= 18 && valNorm.length >= 18 && valLower.slice(0, 18) === key.slice(0, 18).toLowerCase()) {
+                            newVal = translated;
+                            break;
                         }
                     }
                 }
