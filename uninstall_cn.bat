@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 chcp 65001 >nul
 title Antigravity 2.0 卸载汉化还原工具
 

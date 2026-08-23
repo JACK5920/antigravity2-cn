@@ -632,12 +632,16 @@ function detectInstallationDir(manualDir) {
 
     const candidates = [];
     const seenCandidates = new Set();
-    const addCandidate = (candidate) => {
+    const addCandidate = (candidate, unshift = false) => {
         if (!candidate) return;
         const normalized = path.resolve(candidate);
         const key = normalized.toLowerCase();
         if (!seenCandidates.has(key)) {
-            candidates.push(normalized);
+            if (unshift) {
+                candidates.unshift(normalized);
+            } else {
+                candidates.push(normalized);
+            }
             seenCandidates.add(key);
         }
     };
@@ -649,6 +653,23 @@ function detectInstallationDir(manualDir) {
     };
 
     if (process.platform === 'win32') {
+        // 优先 1：当前正在运行中的 Antigravity 实例路径
+        try {
+            const wmicOut = child_process.execSync('wmic process where "name like \'%%Antigravity%%\'" get ExecutablePath', { encoding: 'utf-8', stdio: 'pipe' });
+            for (const line of wmicOut.split(/\r?\n/)) {
+                const trimmed = line.trim();
+                if (trimmed && /Antigravity\.exe$/i.test(trimmed) && fs.existsSync(trimmed)) {
+                    addCandidate(path.dirname(trimmed), true);
+                }
+            }
+        } catch (e) {}
+
+        // 优先 2：标准 Antigravity 2.0+ 用户目录 (LOCALAPPDATA)
+        const localAppdata = process.env.LOCALAPPDATA;
+        if (localAppdata) {
+            addCandidate(path.join(localAppdata, 'Programs', 'antigravity'), true);
+        }
+
         addCandidate(process.env.ANTIGRAVITY_INSTALL_DIR);
         addCandidate(process.env.ANTIGRAVITY_HOME);
 
@@ -680,16 +701,23 @@ function detectInstallationDir(manualDir) {
             addCandidate(`${drive}:\\Antigravity`);
         }
         addCandidate("C:\\Program Files\\Antigravity");
-
-        const localAppdata = process.env.LOCALAPPDATA;
-        if (localAppdata) {
-            addCandidate(path.join(localAppdata, 'Programs', 'antigravity'));
-        }
     } else if (process.platform === 'darwin') {
         addCandidate("/Applications/Antigravity.app");
         addCandidate(path.join(process.env.HOME || '', 'Applications', 'Antigravity.app'));
     }
 
+    // 优先匹配包含 app.asar 的 2.0+ 现代化版本
+    for (const p of candidates) {
+        const isV2 = fs.existsSync(path.join(p, "resources", "app.asar")) ||
+                     fs.existsSync(path.join(p, "app.asar")) ||
+                     fs.existsSync(path.join(p, "Contents", "Resources", "app.asar"));
+        if (fs.existsSync(p) && isV2) {
+            console.log(`[探测] 成功自动识别到 Antigravity 2.0+ (app.asar) 安装目录: ${p}`);
+            return path.resolve(p);
+        }
+    }
+
+    // 次级回退匹配（旧版 1.0 架构）
     for (const p of candidates) {
         if (fs.existsSync(p) && hasAntigravityResources(p)) {
             console.log(`[探测] 成功自动识别到 Antigravity 安装目录: ${p}`);

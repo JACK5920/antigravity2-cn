@@ -24,5 +24,16 @@
     "No subagents": "尚無子代理",
     "No active skills": "尚無啟用中的技能",
     "Agent Auto-Fix Lints": "代理自動修復 Lint 錯誤",
-    "When enabled, agent is given awareness of lint errors created by its edits and may fix them without explicit user prompting.": "啟用後，代理將能感知其編輯所產生的 Lint 錯誤，並可在未經使用者明確提示的情況下嘗試修復。"
+    "When enabled, agent is given awareness of lint errors created by its edits and may fix them without explicit user prompting.": "啟用後，代理將能感知其編輯所產生的 Lint 錯誤，並可在未經使用者明確提示的情況下嘗試修復。",
+    "Subagent Management": "子智能體管理中心",
+    "Define custom subagent workflows and capabilities": "定義自訂子智能體工作流程與專精能力",
+    "Subagent Name": "子智能體名稱",
+    "System Prompt Template": "系統提示詞範本",
+    "Enable MCP Tools": "啟用 MCP 工具調用",
+    "Enable Write Tools": "啟用檔案寫入與指令執行工具",
+    "Enable Subagent Tools": "允許衍生子智能體",
+    "Workspace Mode": "工作區工作模式",
+    "Inherit Workspace": "繼承父層工作區",
+    "Branch Workspace": "建立分支獨立隔離工作區",
+    "Share Workspace": "共用工作區儲存庫(Worktree)"
 }

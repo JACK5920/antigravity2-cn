@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 chcp 65001 >nul
 title Antigravity 2.0 繁體中文漢化安裝器
 
