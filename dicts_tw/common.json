@@ -176,7 +176,7 @@
     "Search tasks...": "搜尋任務...",
     "No scheduled tasks configured.": "未配置計劃任務。",
     "Search conversations...": "搜尋會話...",
-    "Pin Conversation": "置頂對話",
+    "Pin Conversation": "置頂此對話",
     "Unpin Conversation": "取消置頂對話",
     "Archive Conversation": "封存對話",
     "Unarchive Conversation": "取消封存對話",
@@ -373,5 +373,11 @@
     "Ask": "詢問",
     "Eager": "積極模式 (Eager)",
     "Cautious": "謹慎模式 (Cautious)",
-    "Strict": "嚴格模式 (Strict)"
+    "Strict": "嚴格模式 (Strict)",
+    "Pinned Conversations": "置頂對話清單",
+    "Pinned Conversation": "已置頂對話",
+    "Mark Read": "標記為已讀",
+    "Mark as Read": "標記為已讀",
+    "Mark Unread": "標記為未讀",
+    "Mark as Unread": "標記為未讀"
 }

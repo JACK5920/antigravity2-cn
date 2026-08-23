@@ -176,8 +176,8 @@
     "Search tasks...": "搜索任务...",
     "No scheduled tasks configured.": "未配置计划任务。",
     "Search conversations...": "搜索会话...",
-    "Pin Conversation": "置顶会话",
-    "Unpin Conversation": "取消置顶会话",
+    "Pin Conversation": "置顶此对话",
+    "Unpin Conversation": "取消置顶对话",
     "Archive Conversation": "归档会话",
     "Unarchive Conversation": "取消归档会话",
     "Archive": "归档",
@@ -373,5 +373,11 @@
     "Language server connected": "语言服务核心已连接",
     "Reconnecting...": "正在重新连接...",
     "Host bridge connected": "宿主桥接通信正常",
-    "Up to date": "已是最新版本"
+    "Up to date": "已是最新版本",
+    "Pinned Conversations": "置顶对话列表",
+    "Pinned Conversation": "已置顶对话",
+    "Mark Read": "标记为已读",
+    "Mark as Read": "标记为已读",
+    "Mark Unread": "标记为未读",
+    "Mark as Unread": "标记为未读"
 }
