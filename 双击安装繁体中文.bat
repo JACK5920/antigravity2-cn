@@ -20,7 +20,8 @@ echo   [1] 英文品牌名 (Antigravity) [預設推薦]
 echo   [2] 隱藏品牌名
 echo   [3] 中文品牌名 (反重力智慧程式設計)
 echo.
-set /p brand_choice="請輸入選項編號 [預設 1]: "
+set brand_choice=1
+set /p brand_choice="
 
 if "%brand_choice%"=="2" (
     node "%~dp0localization_engine.js" --tw --brand-title hidden

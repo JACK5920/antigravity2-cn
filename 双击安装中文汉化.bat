@@ -20,7 +20,8 @@ echo   [1] 英文品牌名 (Antigravity) [默认推荐]
 echo   [2] 隐藏品牌名
 echo   [3] 中文品牌名 (反重力智能编程)
 echo.
-set /p brand_choice="请输入选项编号 [默认 1]: "
+set brand_choice=1
+set /p brand_choice="
 
 if "%brand_choice%"=="2" (
     node "%~dp0localization_engine.js" --brand-title hidden
