@@ -1,27 +1,26 @@
-﻿@echo off
-chcp 65001 >nul
-title Antigravity 2.0 繁體中文漢化安裝器
+@echo off
+title Antigravity 2.0 ���w���ĝh�����b��
 
 echo ============================================================
-echo         Antigravity 2.0 繁體中文漢化注入安裝工具 (v2.9.1 適配版)
+echo         Antigravity 2.0 ���w���ĝh��ע�밲�b���� (v2.9.1 �m���)
 echo ============================================================
 echo.
 
 node -v >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [錯誤] 未檢測到 Node.js 環境！
-    echo 請先安裝 Node.js (https://nodejs.org) 後再執行本指令碼。
+    echo [�e�`] δ�z�y�� Node.js �h����
+    echo Ո�Ȱ��b Node.js (https://nodejs.org) ���و��б�ָ��a��
     echo.
     pause
     exit /b 1
 )
 
-echo 請選擇左上角品牌名顯示方式:
-echo   [1] 英文品牌名 (Antigravity) [預設推薦]
-echo   [2] 隱藏品牌名
-echo   [3] 中文品牌名 (反重力智慧程式設計)
+echo Ո�x�����Ͻ�Ʒ�����@ʾ��ʽ:
+echo   [1] Ӣ��Ʒ���� (Antigravity) [�A�O���]]
+echo   [2] �[��Ʒ����
+echo   [3] ����Ʒ���� (�������ǻ۳�ʽ�OӋ)
 echo.
-set /p brand_choice="請輸入選項編號 [預設 1]: "
+set /p brand_choice="Ոݔ���x헾�̖ [�A�O 1]: "
 
 if "%brand_choice%"=="2" (
     node "%~dp0localization_engine.js" --tw --brand-title hidden

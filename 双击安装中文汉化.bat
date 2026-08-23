@@ -1,27 +1,26 @@
-ï»¿@echo off
-chcp 65001 >nul
-title Antigravity 2.0 ä¸­æ–‡æ±‰åŒ–å®‰è£…å™¨
+@echo off
+title Antigravity 2.0 ÖÐÎÄºº»¯°²×°Æ÷
 
 echo ============================================================
-echo         Antigravity 2.0 ä¸­æ–‡æ±‰åŒ–æ³¨å…¥å®‰è£…å·¥å…· (v2.9.1 é€‚é…ç‰ˆ)
+echo         Antigravity 2.0 ÖÐÎÄºº»¯×¢Èë°²×°¹¤¾ß (v2.9.1 ÊÊÅä°æ)
 echo ============================================================
 echo.
 
 node -v >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [é”™è¯¯] æœªæ£€æµ‹åˆ° Node.js çŽ¯å¢ƒï¼
-    echo è¯·å…ˆå®‰è£… Node.js (https://nodejs.org) åŽå†è¿è¡Œæœ¬è„šæœ¬ã€‚
+    echo [´íÎó] Î´¼ì²âµ½ Node.js »·¾³£¡
+    echo ÇëÏÈ°²×° Node.js (https://nodejs.org) ºóÔÙÔËÐÐ±¾½Å±¾¡£
     echo.
     pause
     exit /b 1
 )
 
-echo è¯·é€‰æ‹©å·¦ä¸Šè§’å“ç‰Œåæ˜¾ç¤ºæ–¹å¼:
-echo   [1] è‹±æ–‡å“ç‰Œå (Antigravity) [é»˜è®¤æŽ¨è]
-echo   [2] éšè—å“ç‰Œå
-echo   [3] ä¸­æ–‡å“ç‰Œå (åé‡åŠ›æ™ºèƒ½ç¼–ç¨‹)
+echo ÇëÑ¡Ôñ×óÉÏ½ÇÆ·ÅÆÃûÏÔÊ¾·½Ê½:
+echo   [1] Ó¢ÎÄÆ·ÅÆÃû (Antigravity) [Ä¬ÈÏÍÆ¼ö]
+echo   [2] Òþ²ØÆ·ÅÆÃû
+echo   [3] ÖÐÎÄÆ·ÅÆÃû (·´ÖØÁ¦ÖÇÄÜ±à³Ì)
 echo.
-set /p brand_choice="è¯·è¾“å…¥é€‰é¡¹ç¼–å· [é»˜è®¤ 1]: "
+set /p brand_choice="ÇëÊäÈëÑ¡Ïî±àºÅ [Ä¬ÈÏ 1]: "
 
 if "%brand_choice%"=="2" (
     node "%~dp0localization_engine.js" --brand-title hidden

@@ -1,15 +1,14 @@
-ï»¿@echo off
-chcp 65001 >nul
-title Antigravity 2.0 å¸è½½æ±‰åŒ–è¿˜åŸå·¥å…·
+@echo off
+title Antigravity 2.0 Ğ¶ÔØºº»¯»¹Ô­¹¤¾ß
 
 echo ============================================================
-echo         Antigravity 2.0 å¸è½½æ±‰åŒ–è¿˜åŸå®˜æ–¹åŸç‰ˆå·¥å…·
+echo         Antigravity 2.0 Ğ¶ÔØºº»¯»¹Ô­¹Ù·½Ô­°æ¹¤¾ß
 echo ============================================================
 echo.
 
 node -v >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [é”™è¯¯] æœªæ£€æµ‹åˆ° Node.js ç¯å¢ƒï¼
+    echo [´íÎó] Î´¼ì²âµ½ Node.js »·¾³£¡
     pause
     exit /b 1
 )
