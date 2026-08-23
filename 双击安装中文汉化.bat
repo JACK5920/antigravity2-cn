@@ -1,40 +1,23 @@
-@echo off
-setlocal
+ï»¿@echo off
+chcp 65001 >nul
 cd /d "%~dp0"
-title Antigravity 2.0 ÖÐÎÄºº»¯°²×°Æ÷
 
 echo ============================================================
-echo         Antigravity 2.0 ÖÐÎÄºº»¯×¢Èë°²×°¹¤¾ß (v2.9.1 ÊÊÅä°æ)
+echo   Antigravity 2.0 ä¸­æ–‡æ±‰åŒ–æ³¨å…¥å·¥å…· (v2.9.1 å…¨æ–°é€‚é…ç‰ˆ)
 echo ============================================================
 echo.
 
-node -v >nul 2>&1
-if errorlevel 1 (
-    echo [´íÎó] Î´¼ì²âµ½ Node.js »·¾³£¡
-    echo ÇëÏÈ°²×° Node.js (https://nodejs.org) ºóÔÙÔËÐÐ±¾½Å±¾¡£
-    echo.
-    pause
-    exit /b 1
+set "NODE_BIN=node"
+where node >nul 2>&1
+if %errorlevel% neq 0 (
+    if exist "D:\Program Files\nodejs\node.exe" set "NODE_BIN=D:\Program Files\nodejs\node.exe"
+    if exist "C:\Program Files\nodejs\node.exe" set "NODE_BIN=C:\Program Files\nodejs\node.exe"
 )
 
-echo ÇëÑ¡Ôñ×óÉÏ½ÇÆ·ÅÆÃûÏÔÊ¾·½Ê½:
-echo   [1] Ó¢ÎÄÆ·ÅÆÃû (Antigravity) [Ä¬ÈÏÍÆ¼ö]
-echo   [2] Òþ²ØÆ·ÅÆÃû
-echo   [3] ÖÐÎÄÆ·ÅÆÃû (·´ÖØÁ¦ÖÇÄÜ±à³Ì)
-echo.
-set "brand_choice=1"
-set /p "brand_choice=ÇëÊäÈëÑ¡Ïî±àºÅ [Ö±½Ó°´»Ø³µÄ¬ÈÏÑ¡ 1]: "
+"%NODE_BIN%" localization_engine.js %*
 
 echo.
-echo ------------------------------------------------------------
-if "%brand_choice%"=="2" (
-    node localization_engine.js --brand-title hidden
-) else if "%brand_choice%"=="3" (
-    node localization_engine.js --brand-title translated
-) else (
-    node localization_engine.js --brand-title english
-)
-echo ------------------------------------------------------------
-echo.
-echo [ÌáÊ¾] ºº»¯ÒÑÍê³É£¬Çë°´ÈÎÒâ¼üÍË³ö±¾´°¿Ú...
-pause >nul
+echo ============================================================
+echo   æ±‰åŒ–æµç¨‹å·²æ‰§è¡Œå®Œæ¯•ï¼Œè¯·æŒ‰ä»»æ„é”®é€€å‡ºæœ¬çª—å£...
+echo ============================================================
+pause
