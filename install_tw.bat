@@ -1,23 +1,31 @@
-ï»¿@echo off
-chcp 65001 >nul
+@echo off
 cd /d "%~dp0"
+title Antigravity 2.0 Traditional Chinese Tool
 
 echo ============================================================
-echo   Antigravity 2.0 ç¹é«”ä¸­æ–‡æ¼¢åŒ–æ³¨å…¥å·¥å…· (v2.9.1 å…¨æ–°é©é…ç‰ˆ)
+echo   Antigravity 2.0 ·±ówÖĞÎÄh»¯×¢Èë¹¤¾ß (v2.9.1 È«ĞÂßmÅä°æ)
 echo ============================================================
 echo.
 
 set "NODE_BIN=node"
-where node >nul 2>&1
-if %errorlevel% neq 0 (
-    if exist "D:\Program Files\nodejs\node.exe" set "NODE_BIN=D:\Program Files\nodejs\node.exe"
-    if exist "C:\Program Files\nodejs\node.exe" set "NODE_BIN=C:\Program Files\nodejs\node.exe"
+where node >nul 2>nul
+if errorlevel 1 (
+    if exist "D:\Program Files\nodejs\node.exe" (
+        set "NODE_BIN=D:\Program Files\nodejs\node.exe"
+    ) else if exist "C:\Program Files\nodejs\node.exe" (
+        set "NODE_BIN=C:\Program Files\nodejs\node.exe"
+    ) else (
+        echo [åeÕ`] Î´™zœyµ½ Node.js£¬ÕˆÏÈ°²Ñb Node.js!
+        pause
+        exit /b 1
+    )
 )
 
+echo [ˆÌĞĞ] ÕıÔÚ†¢„Ó·±ówÖĞÎÄh»¯×¢ÈëÒıÇæ£¬ÕˆÉÔºò...
+echo.
 "%NODE_BIN%" localization_engine.js --tw %*
-
 echo.
 echo ============================================================
-echo   æ¼¢åŒ–æµç¨‹å·²åŸ·è¡Œå®Œç•¢ï¼Œè«‹æŒ‰ä»»æ„éµé€€å‡ºæœ¬è¦–çª—...
+echo   h»¯Á÷³ÌÒÑˆÌĞĞÍê®…£¬Õˆ°´ÈÎÒâæIÍË³ö±¾Ò•´°...
 echo ============================================================
 pause
