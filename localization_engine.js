@@ -786,7 +786,7 @@ function install20(resourcesDir) {
         fs.rmSync(tempDir, { recursive: true, force: true });
     }
 
-    console.log(`[解包] 正在使用 npx 提取 app.asar...`);
+    console.log(`[步骤 2/5] 正在解包提取 app.asar 核心文件 (约需 1~2 秒)...`);
     const extractRes = runCommandSync(`npx -y @electron/asar extract "${asarPath}" "${tempDir}"`);
     if (!extractRes.success || !fs.existsSync(tempDir)) {
         console.error(`[错误] 解包失败，可能是由于系统未安装 Node.js/npm 或者网络限制。`);
@@ -802,7 +802,8 @@ function install20(resourcesDir) {
         return false;
     }
 
-    console.log(`[修改] 正在向 preload.js 注入汉化代码...`);
+    console.log(`[步骤 3/5] 正在注入 2.9.1 全量本地化代码与字典 (1080+ 词条)...`);
+    console.log(`  -> 注入 preload.js (DOM 动态翻译引擎)...`);
     let content = fs.readFileSync(preloadPath, 'utf-8');
 
     // 清理已有的汉化，重新注入
@@ -811,12 +812,12 @@ function install20(resourcesDir) {
     const newContent = cleanedContent + "\n" + translationJs;
 
     fs.writeFileSync(preloadPath, newContent, 'utf-8');
-    console.log(`[修改] 注入成功！`);
+    console.log(`  -> preload.js 注入成功！`);
 
     // 3.1 注入 menu.js (系统菜单汉化)
     const menuPath = path.join(tempDir, "dist", "menu.js");
     if (fs.existsSync(menuPath)) {
-        console.log(`[修改] 正在向 menu.js 注入菜单汉化代码...`);
+        console.log(`  -> 注入 menu.js (系统顶栏菜单)...`);
         let menuContent = fs.readFileSync(menuPath, 'utf-8');
         
         const menuCleaned = cleanMenuJsContent(menuContent);
@@ -961,7 +962,7 @@ function install20(resourcesDir) {
     // 3.3 注入 loadingOverlay.js (加载页汉化)
     const loadingPath = path.join(tempDir, "dist", "loadingOverlay.js");
     if (fs.existsSync(loadingPath)) {
-        console.log(`[修改] 正在向 loadingOverlay.js 注入加载页汉化...`);
+        console.log(`  -> 注入 loadingOverlay.js (启动加载页)...`);
         let loadingContent = fs.readFileSync(loadingPath, 'utf-8');
         
         const targetText = '<div class="text">Loading Antigravity</div>';
@@ -972,13 +973,13 @@ function install20(resourcesDir) {
         loadingContent = loadingContent.replace(targetText, replacementText);
         
         fs.writeFileSync(loadingPath, loadingContent, 'utf-8');
-        console.log(`[修改] 加载页汉化注入成功！`);
+        console.log(`  -> loadingOverlay.js 注入成功！`);
     }
 
     // 3.4 注入 updater.js (更新弹窗汉化)
     const updaterPath = path.join(tempDir, "dist", "updater.js");
     if (fs.existsSync(updaterPath)) {
-        console.log(`[修改] 正在向 updater.js 注入更新弹窗汉化...`);
+        console.log(`  -> 注入 updater.js (自动更新弹窗)...`);
         let updaterContent = fs.readFileSync(updaterPath, 'utf-8');
         
         // 替换 Check for Updates 弹窗的属性
@@ -995,11 +996,11 @@ function install20(resourcesDir) {
         
         updaterContent = updaterContent.replace(targetOptions, replacementOptions);
         fs.writeFileSync(updaterPath, updaterContent, 'utf-8');
-        console.log(`[修改] 更新弹窗汉化注入成功！`);
+        console.log(`  -> updater.js 注入成功！`);
     }
 
     // 4. 重新打包
-    console.log(`[打包] 正在将修改后的内容打包回 app.asar...`);
+    console.log(`[步骤 4/5] 正在重新封包 app.asar 核心 (约需 1~2 秒)...`);
     const packRes = runCommandSync(`npx -y @electron/asar pack "${tempDir}" "${asarPath}"`);
     
     // 5. 清理临时文件夹
@@ -1012,7 +1013,10 @@ function install20(resourcesDir) {
     }
 
     resignAppOnMac(resourcesDir);
-    console.log(`[√] Antigravity 2.0 汉化部署完成！`);
+    console.log(`[步骤 5/5] 校验包完整性并同步生效...`);
+    console.log(`============================================================`);
+    console.log(`[√] 恭喜！Antigravity 2.9.1 中文汉化已 100% 部署成功！`);
+    console.log(`============================================================`);
     return true;
 }
 

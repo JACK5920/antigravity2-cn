@@ -15,8 +15,10 @@ if errorlevel 1 (
     exit /b 1
 )
 
-node localization_engine.js --restore
-
 echo.
-echo ============================================================
-pause
+echo ------------------------------------------------------------
+node localization_engine.js --restore
+echo ------------------------------------------------------------
+echo.
+echo [提示] 官方原版已成功还原，请按任意键退出本窗口...
+pause >nul

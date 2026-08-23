@@ -23,8 +23,10 @@ echo   [2] 隱藏品牌名
 echo   [3] 中文品牌名 (反重力智慧程式設計)
 echo.
 set "brand_choice=1"
-set /p "brand_choice=請輸入選項編號 [直接 Enter 預設 1]: "
+set /p "brand_choice=請輸入選項編號 [直接按 Enter 預設選 1]: "
 
+echo.
+echo ------------------------------------------------------------
 if "%brand_choice%"=="2" (
     node localization_engine.js --tw --brand-title hidden
 ) else if "%brand_choice%"=="3" (
@@ -32,7 +34,7 @@ if "%brand_choice%"=="2" (
 ) else (
     node localization_engine.js --tw --brand-title english
 )
-
+echo ------------------------------------------------------------
 echo.
-echo ============================================================
-pause
+echo [提示] 漢化已完成，請按任意鍵結束本視窗...
+pause >nul

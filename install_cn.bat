@@ -23,8 +23,10 @@ echo   [2] 隐藏品牌名
 echo   [3] 中文品牌名 (反重力智能编程)
 echo.
 set "brand_choice=1"
-set /p "brand_choice=请输入选项编号 [直接回车默认 1]: "
+set /p "brand_choice=请输入选项编号 [直接按回车默认选 1]: "
 
+echo.
+echo ------------------------------------------------------------
 if "%brand_choice%"=="2" (
     node localization_engine.js --brand-title hidden
 ) else if "%brand_choice%"=="3" (
@@ -32,9 +34,7 @@ if "%brand_choice%"=="2" (
 ) else (
     node localization_engine.js --brand-title english
 )
-
+echo ------------------------------------------------------------
 echo.
-echo ============================================================
-echo [成功] 汉化注入已全部完成！软件将自动重启。
-echo ============================================================
-pause
+echo [提示] 汉化已完成，请按任意键退出本窗口...
+pause >nul
