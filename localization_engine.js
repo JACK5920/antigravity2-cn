@@ -387,33 +387,23 @@ function generateJs() {
                     newVal = valNorm.replace(/^Refreshes in (\d+) minutes?$/i, (match, m) => {
                         return USE_TW ? (m + " 分鐘後更新") : (m + " 分钟后刷新");
                     });
-                } else if (/^You have used some of your weekly limit, it will fully refresh in (\d+) days?, (\d+) hours?\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\d+) days?, (\d+) hours?\.?$/i, (match, d, h) => {
-                        return USE_TW ? ("您已使用了部分每週限制，將在 " + d + " 天 " + h + " 小時後完全更新。") : ("您已使用了部分每周限制，将在 " + d + " 天 " + h + " 小时后完全刷新。");
+                } else if (/^You have used some of your weekly limit, it will fully refresh in (.+?)\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (.+?)\.?$/i, (match, timeStr) => {
+                        let t = timeStr.replace(/(\d+)\s*days?/gi, (m, n) => n + (USE_TW ? " 天" : " 天"))
+                                       .replace(/(\d+)\s*hours?/gi, (m, n) => n + (USE_TW ? " 小時" : " 小时"))
+                                       .replace(/(\d+)\s*minutes?/gi, (m, n) => n + (USE_TW ? " 分鐘" : " 分钟"))
+                                       .replace(/(\d+)\s*seconds?/gi, (m, n) => n + (USE_TW ? " 秒" : " 秒"))
+                                       .replace(/,/g, '');
+                        return USE_TW ? ("您已使用了部分每週配額，將在 " + t + " 後完全更新。") : ("您已使用了部分每周配额，将在 " + t + " 后完全刷新。");
                     });
-                } else if (/^You have used some of your weekly limit, it will fully refresh in (\d+) days?\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\d+) days?\.?$/i, (match, d) => {
-                        return USE_TW ? ("您已使用了部分每週限制，將在 " + d + " 天後完全更新。") : ("您已使用了部分每周限制，将在 " + d + " 天后完全刷新。");
-                    });
-                } else if (/^You have used some of your weekly limit, it will fully refresh in (\d+) hours?\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\d+) hours?\.?$/i, (match, h) => {
-                        return USE_TW ? ("您已使用了部分每週限制，將在 " + h + " 小時後完全更新。") : ("您已使用了部分每周限制，将在 " + h + " 小时后完全刷新。");
-                    });
-                } else if (/^You have used some of your weekly limit, it will fully refresh in (\d+) minutes?\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your weekly limit, it will fully refresh in (\d+) minutes?\.?$/i, (match, m) => {
-                        return USE_TW ? ("您已使用了部分每週限制，將在 " + m + " 分鐘後完全更新。") : ("您已使用了部分每周限制，将在 " + m + " 分钟后完全刷新。");
-                    });
-                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\d+) hours?, (\d+) minutes?\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\d+) hours?, (\d+) minutes?\.?$/i, (match, h, m) => {
-                        return USE_TW ? ("您已使用了部分 5 小時限制，將在 " + h + " 小時 " + m + " 分鐘後完全更新。") : ("您已使用了部分 5 小时限制，将在 " + h + " 小时 " + m + " 分钟后完全刷新。");
-                    });
-                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\d+) hours?\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\d+) hours?\.?$/i, (match, h) => {
-                        return USE_TW ? ("您已使用了部分 5 小時限制，將在 " + h + " 小時後完全更新。") : ("您已使用了部分 5 小时限制，将在 " + h + " 小时后完全刷新。");
-                    });
-                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (\d+) minutes?\.?$/i.test(valNorm)) {
-                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (\d+) minutes?\.?$/i, (match, m) => {
-                        return USE_TW ? ("您已使用了部分 5 小時限制，將在 " + m + " 分鐘後完全更新。") : ("您已使用了部分 5 小时限制，将在 " + m + " 分钟后完全刷新。");
+                } else if (/^You have used some of your 5-hour limit, it will fully refresh in (.+?)\.?$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^You have used some of your 5-hour limit, it will fully refresh in (.+?)\.?$/i, (match, timeStr) => {
+                        let t = timeStr.replace(/(\d+)\s*days?/gi, (m, n) => n + (USE_TW ? " 天" : " 天"))
+                                       .replace(/(\d+)\s*hours?/gi, (m, n) => n + (USE_TW ? " 小時" : " 小时"))
+                                       .replace(/(\d+)\s*minutes?/gi, (m, n) => n + (USE_TW ? " 分鐘" : " 分钟"))
+                                       .replace(/(\d+)\s*seconds?/gi, (m, n) => n + (USE_TW ? " 秒" : " 秒"))
+                                       .replace(/,/g, '');
+                        return USE_TW ? ("您已使用了部分 5 小時配額，將在 " + t + " 後完全更新。") : ("您已使用了部分 5 小时配额，将在 " + t + " 后完全刷新。");
                     });
                 } else if (/^Learn more about (.+)$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^Learn more about (.+)$/i, (match, p) => {
@@ -486,13 +476,10 @@ function generateJs() {
                         return name + (USE_TW ? " 遠端 MCP 伺服器可讓您管理 " : " 远程 MCP 服务器可让您管理 ") + res + (USE_TW ? " 資源。" : " 资源。");
                     });
                 } else {
-                    // 2. 长句子串滑动替换与前缀截断智能匹配 (缩短至前 18 字符即可高精度命中)
+                    // 2. 长句子串完整包含滑动替换
                     for (const [key, translated] of longEntries) {
                         if (key.length > 15 && valNorm.includes(key)) {
                             newVal = newVal.split(key).join(translated);
-                            break;
-                        } else if (key.length >= 18 && valNorm.length >= 18 && valLower.slice(0, 18) === key.slice(0, 18).toLowerCase()) {
-                            newVal = translated;
                             break;
                         }
                     }
