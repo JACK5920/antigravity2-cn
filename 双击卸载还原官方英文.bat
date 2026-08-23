@@ -1,4 +1,6 @@
 @echo off
+setlocal
+cd /d "%~dp0"
 title Antigravity 2.0 卸载汉化还原工具
 
 echo ============================================================
@@ -7,13 +9,14 @@ echo ============================================================
 echo.
 
 node -v >nul 2>&1
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo [错误] 未检测到 Node.js 环境！
     pause
     exit /b 1
 )
 
-node "%~dp0localization_engine.js" --restore
+node localization_engine.js --restore
 
 echo.
+echo ============================================================
 pause
