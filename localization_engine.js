@@ -999,6 +999,34 @@ function install20(resourcesDir) {
         console.log(`  -> updater.js 注入成功！`);
     }
 
+    // 3.5 注入 ideInstall/wizardHtml.js (新版安装引导向导页汉化)
+    const wizardPath = path.join(tempDir, "dist", "ideInstall", "wizardHtml.js");
+    if (fs.existsSync(wizardPath)) {
+        console.log(`  -> 注入 wizardHtml.js (首次安装引导页)...`);
+        let wizardContent = fs.readFileSync(wizardPath, 'utf-8');
+        
+        const wizardReplacements = USE_TW ? [
+            ["Setting up…", "正在配置…"],
+            ["Welcome to the new Antigravity!", "歡迎使用全新的 Antigravity！"],
+            ["Antigravity has been redesigned to put agents first with new capabilities. If you'd still like a code editor, you can download it as a separate app named <b>Antigravity IDE</b>.", "Antigravity 已全面重新設計，以智能體為核心並帶來全新能力。若您仍需要程式碼編輯器，可將其作為名為 <b>Antigravity IDE</b> 的獨立應用程式下載。"],
+            ["Download the Antigravity IDE", "下載 Antigravity IDE 編輯器"],
+            ["Explore the new Antigravity", "探索全新的 Antigravity"]
+        ] : [
+            ["Setting up…", "正在配置…"],
+            ["Welcome to the new Antigravity!", "欢迎使用全新的 Antigravity！"],
+            ["Antigravity has been redesigned to put agents first with new capabilities. If you'd still like a code editor, you can download it as a separate app named <b>Antigravity IDE</b>.", "Antigravity 已全面重新设计，以智能体为核心并带来全新能力。如果您仍需要代码编辑器，可将其作为名为 <b>Antigravity IDE</b> 的独立应用下载。"],
+            ["Download the Antigravity IDE", "下载 Antigravity IDE 编辑器"],
+            ["Explore the new Antigravity", "探索全新的 Antigravity"]
+        ];
+
+        for (const [fromStr, toStr] of wizardReplacements) {
+            wizardContent = wizardContent.split(fromStr).join(toStr);
+        }
+
+        fs.writeFileSync(wizardPath, wizardContent, 'utf-8');
+        console.log(`  -> wizardHtml.js 注入成功！`);
+    }
+
     // 4. 重新打包
     console.log(`[步骤 4/5] 正在重新封包 app.asar 核心 (约需 1~2 秒)...`);
     const packRes = runCommandSync(`npx -y @electron/asar pack "${tempDir}" "${asarPath}"`);
