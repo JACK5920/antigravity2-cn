@@ -1199,6 +1199,10 @@ function main() {
         }
     }
 
+    console.log("============================================================");
+    console.log(USE_TW ? "  Antigravity 2.0 繁體中文漢化注入工具 (v2.12.2 全新適配版)" : "  Antigravity 2.0 中文汉化注入工具 (v2.12.2 全新适配版)");
+    console.log("============================================================\n");
+
     // 1. 探测路径
     const installDir = detectInstallationDir(manualDir);
     
