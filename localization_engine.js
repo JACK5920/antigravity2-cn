@@ -802,7 +802,7 @@ function install20(resourcesDir) {
         return false;
     }
 
-    console.log(`[步骤 3/5] 正在注入 2.9.1 全量本地化代码与字典 (1080+ 词条)...`);
+    console.log(`[步骤 3/5] 正在注入 2.12.2 全量本地化代码与字典 (1080+ 词条)...`);
     console.log(`  -> 注入 preload.js (DOM 动态翻译引擎)...`);
     let content = fs.readFileSync(preloadPath, 'utf-8');
 
@@ -1015,7 +1015,7 @@ function install20(resourcesDir) {
     resignAppOnMac(resourcesDir);
     console.log(`[步骤 5/5] 校验包完整性并同步生效...`);
     console.log(`============================================================`);
-    console.log(`[√] 恭喜！Antigravity 2.9.1 中文汉化已 100% 部署成功！`);
+    console.log(`[√] 恭喜！Antigravity 2.12.2 中文汉化已 100% 部署成功！`);
     console.log(`============================================================`);
     return true;
 }
