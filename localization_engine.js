@@ -205,6 +205,32 @@ function generateJs() {
     // 核心隔离判断：回溯检查当前节点是否逻辑上属于“禁止汉化区”
     function isInBlockedZone(node) {
         let curr = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+
+        // 【智能放行】如果当前节点是工具调用卡片外壳、操作按钮或步骤标题，优先放行汉化（前提是不是代码标签或代码编辑器）
+        let isToolControl = false;
+        let checkPtr = curr;
+        let checkDepth = 0;
+        while (checkPtr && checkDepth < 6) {
+            if (checkPtr.nodeType === Node.ELEMENT_NODE) {
+                const pTag = checkPtr.tagName.toUpperCase();
+                if (pTag === 'PRE' || pTag === 'CODE' || pTag === 'INPUT' || pTag === 'TEXTAREA') {
+                    return true; // 绝对代码/输入禁区，严格保护
+                }
+                const pCls = checkPtr.className || '';
+                if (typeof pCls === 'string') {
+                    if (pCls.includes('monaco-editor') || pCls.includes('terminal')) {
+                        return true; // 编辑器与终端绝对保护
+                    }
+                    if (pTag === 'BUTTON' || pCls.includes('tool-viewer-card') || pCls.includes('tool-card') || pCls.includes('user-input-buttons')) {
+                        isToolControl = true;
+                    }
+                }
+            }
+            checkPtr = checkPtr.parentElement;
+            checkDepth++;
+        }
+        if (isToolControl) return false;
+
         let depth = 0;
         while (curr && depth < 12) { // 向上回溯 12 层
             if (curr.nodeType === Node.ELEMENT_NODE) {
@@ -802,7 +828,7 @@ function install20(resourcesDir) {
         return false;
     }
 
-    console.log(`[步骤 3/5] 正在注入 2.12.2 全量本地化代码与字典 (1080+ 词条)...`);
+    console.log(`[步骤 3/5] 正在注入 2.18.1 全量本地化代码与字典 (1080+ 词条)...`);
     console.log(`  -> 注入 preload.js (DOM 动态翻译引擎)...`);
     let content = fs.readFileSync(preloadPath, 'utf-8');
 
@@ -852,6 +878,8 @@ function install20(resourcesDir) {
         'Zoom In': '放大',
         'Zoom Out': '縮小',
         'Toggle Full Screen': '切換全螢幕',
+        'Connect to WSL': '連線至 WSL',
+        'Reopen Locally': '在本地重新開啟',
         'Version': '版本'
     }` : `{
         'File': '文件',
@@ -879,6 +907,8 @@ function install20(resourcesDir) {
         'Zoom In': '放大',
         'Zoom Out': '缩小',
         'Toggle Full Screen': '切换全屏',
+        'Connect to WSL': '连接到 WSL',
+        'Reopen Locally': '在本地重新打开',
         'Version': '版本'
     }`};
     function translateMenu(items) {
@@ -1027,6 +1057,20 @@ function install20(resourcesDir) {
         console.log(`  -> wizardHtml.js 注入成功！`);
     }
 
+    // 3.6 注入 provisionSplash.js (WSL 配置加载页汉化)
+    const provisionPath = path.join(tempDir, "dist", "provisionSplash.js");
+    if (fs.existsSync(provisionPath)) {
+        console.log(`  -> 注入 provisionSplash.js (WSL 配置加载页)...`);
+        let provContent = fs.readFileSync(provisionPath, 'utf-8');
+        
+        const targetProv = "Setting up WSL:";
+        const replaceProv = USE_TW ? "正在設定 WSL：" : "正在配置 WSL：";
+        provContent = provContent.split(targetProv).join(replaceProv);
+        
+        fs.writeFileSync(provisionPath, provContent, 'utf-8');
+        console.log(`  -> provisionSplash.js 注入成功！`);
+    }
+
     // 4. 重新打包
     console.log(`[步骤 4/5] 正在重新封包 app.asar 核心 (约需 1~2 秒)...`);
     const packRes = runCommandSync(`npx -y @electron/asar pack "${tempDir}" "${asarPath}"`);
@@ -1043,7 +1087,7 @@ function install20(resourcesDir) {
     resignAppOnMac(resourcesDir);
     console.log(`[步骤 5/5] 校验包完整性并同步生效...`);
     console.log(`============================================================`);
-    console.log(`[√] 恭喜！Antigravity 2.12.2 中文汉化已 100% 部署成功！`);
+    console.log(`[√] 恭喜！Antigravity 2.18.1 中文汉化已 100% 部署成功！`);
     console.log(`============================================================`);
     return true;
 }
@@ -1200,7 +1244,7 @@ function main() {
     }
 
     console.log("============================================================");
-    console.log(USE_TW ? "  Antigravity 2.0 繁體中文漢化注入工具 (v2.12.2 全新適配版)" : "  Antigravity 2.0 中文汉化注入工具 (v2.12.2 全新适配版)");
+    console.log(USE_TW ? "  Antigravity 2.0 繁體中文漢化注入工具 (v2.18.1 全新適配版)" : "  Antigravity 2.0 中文汉化注入工具 (v2.18.1 全新适配版)");
     console.log("============================================================\n");
 
     // 1. 探测路径
