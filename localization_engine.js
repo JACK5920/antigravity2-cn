@@ -828,7 +828,7 @@ function install20(resourcesDir) {
         return false;
     }
 
-    console.log(`[步骤 3/5] 正在注入 2.18.1 全量本地化代码与字典 (1080+ 词条)...`);
+    console.log(`[步骤 3/5] 正在注入 2.19.1 全量本地化代码与字典 (1080+ 词条)...`);
     console.log(`  -> 注入 preload.js (DOM 动态翻译引擎)...`);
     let content = fs.readFileSync(preloadPath, 'utf-8');
 
@@ -956,9 +956,9 @@ function install20(resourcesDir) {
         // 先清理已有的汉化块
         let trayCleaned = cleanTrayJsContent(trayContent);
         
-        // 1. 注入 createTray 里的翻译块 (带标记)
-        const targetCreate = "function createTray(actions) {";
-        const replacementCreate = `function createTray(actions) {
+        // 1. 注入 createTray 里的翻译块 (带标记，兼容 actions 与 actions, onClick)
+        const targetCreateRegex = /function\s+createTray\s*\(\s*actions(?:\s*,\s*onClick)?\s*\)\s*\{/;
+        const replacementCreate = (match) => `${match}
     /* --- TRAY TRANSLATION START --- */
     const translations = ${USE_TW ? `{
         'No agents running': '無執行中的智能體',
@@ -976,10 +976,10 @@ function install20(resourcesDir) {
     }
     /* --- TRAY TRANSLATION END --- */`;
         
-        let trayPatched = trayCleaned.replace(targetCreate, replacementCreate);
+        let trayPatched = trayCleaned.replace(targetCreateRegex, replacementCreate);
         
         // 2. 使用正则替换 updateTrayAgentCount 里的动态显示文本
-        const countRegex = /countItem\.label\s*=\s*\([\s\S]*?' running';/g;
+        const countRegex = /countItem\.label\s*=\s*count\s*>\s*0\s*\?[\s\S]*?:[\s\S]*?;/;
         const replacementCount = USE_TW 
             ? "countItem.label = count > 0 ? `${count} 個智能體執行中` : '無執行中的智能體';"
             : "countItem.label = count > 0 ? `${count} 个智能体运行中` : '无运行中的智能体';";
@@ -1087,7 +1087,7 @@ function install20(resourcesDir) {
     resignAppOnMac(resourcesDir);
     console.log(`[步骤 5/5] 校验包完整性并同步生效...`);
     console.log(`============================================================`);
-    console.log(`[√] 恭喜！Antigravity 2.18.1 中文汉化已 100% 部署成功！`);
+    console.log(`[√] 恭喜！Antigravity 2.19.1 中文汉化已 100% 部署成功！`);
     console.log(`============================================================`);
     return true;
 }
@@ -1244,7 +1244,7 @@ function main() {
     }
 
     console.log("============================================================");
-    console.log(USE_TW ? "  Antigravity 2.0 繁體中文漢化注入工具 (v2.18.1 全新適配版)" : "  Antigravity 2.0 中文汉化注入工具 (v2.18.1 全新适配版)");
+    console.log(USE_TW ? "  Antigravity 2.0 繁體中文漢化注入工具 (v2.19.1 全新適配版)" : "  Antigravity 2.0 中文汉化注入工具 (v2.19.1 全新适配版)");
     console.log("============================================================\n");
 
     // 1. 探测路径
