@@ -460,6 +460,22 @@ function generateJs() {
                     newVal = valNorm.replace(/^See all \((\d+)\)$/i, (match, num) => {
                         return USE_TW ? ("顯示全部 (" + num + ")") : ("显示全部 (" + num + ")");
                     });
+                } else if (/^Marked (\d+) conversations? as read$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Marked (\d+) conversations? as read$/i, (match, num) => {
+                        return USE_TW ? ("已將 " + num + " 個對話標記為已讀") : ("已将 " + num + " 个对话标记为已读");
+                    });
+                } else if (/^Show submitted \((\d+)\)$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Show submitted \((\d+)\)$/i, (match, num) => {
+                        return USE_TW ? ("顯示已提交 (" + num + ")") : ("显示已提交 (" + num + ")");
+                    });
+                } else if (/^Comments \((\d+)\)$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Comments \((\d+)\)$/i, (match, num) => {
+                        return USE_TW ? ("評論 (" + num + ")") : ("评论 (" + num + ")");
+                    });
+                } else if (/^Grant administrator access for (.+)$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^Grant administrator access for (.+)$/i, (match, target) => {
+                        return USE_TW ? ("授予管理員權限給 " + target) : ("授予管理员权限用于 " + target);
+                    });
                 } else if (/^Available AI Credits: (\d+)$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^Available AI Credits: (\d+)$/i, (match, num) => {
                         return USE_TW ? ("可用 AI 額度: " + num) : ("可用 AI 额度: " + num);
@@ -828,7 +844,7 @@ function install20(resourcesDir) {
         return false;
     }
 
-    console.log(`[步骤 3/5] 正在注入 2.19.1 全量本地化代码与字典 (1080+ 词条)...`);
+    console.log(`[步骤 3/5] 正在注入 2.23.0 全量本地化代码与字典 (2150+ 词条)...`);
     console.log(`  -> 注入 preload.js (DOM 动态翻译引擎)...`);
     let content = fs.readFileSync(preloadPath, 'utf-8');
 
@@ -1087,7 +1103,7 @@ function install20(resourcesDir) {
     resignAppOnMac(resourcesDir);
     console.log(`[步骤 5/5] 校验包完整性并同步生效...`);
     console.log(`============================================================`);
-    console.log(`[√] 恭喜！Antigravity 2.19.1 中文汉化已 100% 部署成功！`);
+    console.log(`[√] 恭喜！Antigravity 2.23.0 中文汉化已 100% 部署成功！`);
     console.log(`============================================================`);
     return true;
 }
@@ -1244,7 +1260,7 @@ function main() {
     }
 
     console.log("============================================================");
-    console.log(USE_TW ? "  Antigravity 2.0 繁體中文漢化注入工具 (v2.19.1 全新適配版)" : "  Antigravity 2.0 中文汉化注入工具 (v2.19.1 全新适配版)");
+    console.log(USE_TW ? "  Antigravity 2.0 繁體中文漢化注入工具 (v2.23.0 全新適配版)" : "  Antigravity 2.0 中文汉化注入工具 (v2.23.0 全新适配版)");
     console.log("============================================================\n");
 
     // 1. 探测路径
