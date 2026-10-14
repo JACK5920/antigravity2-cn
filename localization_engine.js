@@ -252,13 +252,16 @@ function generateJs() {
                         checkPtr.getAttribute('role') === 'button' ||
                         pCls.includes('tool-viewer-card') ||
                         pCls.includes('tool-card') ||
+                        pCls.includes('tool-group-collapsible') ||
+                        pCls.includes('files-changed-header') ||
+                        pCls.includes('idle-status-text') ||
                         pCls.includes('user-input-buttons') ||
                         pCls.includes('min-h-8 py-1 px-2 select-none') ||
                         pCls.includes('whitespace-nowrap text-muted-foreground') ||
                         pCls.includes('group/agent-ref') ||
                         pCls.includes('tabular-nums select-none') ||
                         pCls.includes('animate-shimmer-text') ||
-                        /^(view-file-step|run-command-step|thinking-collapsible-trigger|subagent-node|subagent-expand|subagent-approve|subagent-deny|subagent-stop|running-items-card|running-items-panel|running-items-subagents|running-items-tasks|idle-status-text|agent-loading|step-bar|cleared-step-notice)$/.test(pTestId)
+                        /^(tool-group-collapsible|files-changed-header|view-file-step|run-command-step|thinking-collapsible-trigger|subagent-node|subagent-expand|subagent-approve|subagent-deny|subagent-stop|running-items-card|running-items-panel|running-items-subagents|running-items-tasks|idle-status-text|agent-loading|step-bar|cleared-step-notice)$/.test(pTestId)
                     ) {
                         isToolControl = true;
                     }
@@ -334,7 +337,10 @@ function generateJs() {
                     cls.includes('min-h-8 py-1 px-2 select-none') ||
                     cls.includes('whitespace-nowrap text-muted-foreground') ||
                     cls.includes('group/agent-ref') ||
-                    /^(view-file-step|run-command-step|subagent-node|subagent-tab-header-title|running-items-card|running-items-panel|running-items-subagents|running-items-tasks)$/.test(tid)
+                    cls.includes('tool-group-collapsible') ||
+                    cls.includes('files-changed-header') ||
+                    cls.includes('idle-status-text') ||
+                    /^(tool-group-collapsible|files-changed-header|idle-status-text|view-file-step|run-command-step|subagent-node|subagent-tab-header-title|running-items-card|running-items-panel|running-items-subagents|running-items-tasks)$/.test(tid)
                 ) {
                     return true;
                 }
@@ -764,6 +770,66 @@ function generateJs() {
                     newVal = valNorm.replace(/^\\((\\d+) subagents?\\)$/i, (m, n) => '(' + n + (USE_TW ? ' 個子代理)' : ' 个子代理)'));
                 } else if (/^\\((\\d+) steps?\\)$/i.test(valNorm)) {
                     newVal = valNorm.replace(/^\\((\\d+) steps?\\)$/i, (m, n) => '(' + n + (USE_TW ? ' 個步驟)' : ' 个步骤)'));
+                } else if (/^(\\d+)\\s+files?\\s+changed$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^(\\d+)\\s+files?\\s+changed$/i, (m, n) => n + (USE_TW ? ' 個檔案已變更' : ' 个文件已修改'));
+                } else if (/^(\\d+)\\s+(tasks?|subagents?|subagents\\/tasks)\\s+running$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^(\\d+)\\s+(tasks?|subagents?|subagents\\/tasks)\\s+running$/i, (m, n, type) => {
+                        const tLower = type.toLowerCase();
+                        let tStr = USE_TW ? '個工作' : '个任务';
+                        if (tLower.startsWith('subagent/')) tStr = USE_TW ? '個子代理/工作' : '个子代理/任务';
+                        else if (tLower.startsWith('subagent')) tStr = USE_TW ? '個子代理' : '个子代理';
+                        return n + ' ' + tStr + (USE_TW ? '正在執行' : '正在运行');
+                    });
+                } else if (/^(\\d+)\\s+(?:subagents?\\s+)?blocked$/i.test(valNorm)) {
+                    newVal = valNorm.replace(/^(\\d+)\\s+(?:subagents?\\s+)?blocked$/i, (m, n) => n + (USE_TW ? ' 個已封鎖' : ' 个已阻塞'));
+                } else if (/^(?:Explored|Ran|Edited|Viewed|Read|ran|edited|viewed|read)\\b/.test(valNorm) && (valNorm.includes(',') || /^(?:Explored|Ran|Edited|Viewed|Read|ran|edited|viewed|read)\\s+(\\d+\\s+)?(?:files?|commands?)$/i.test(valNorm))) {
+                    const translateSingleSummary = (p) => {
+                        const pTrim = p.trim();
+                        if (map.has(pTrim)) return map.get(pTrim);
+                        if (lowerMap.has(pTrim.toLowerCase())) return lowerMap.get(pTrim.toLowerCase());
+                        let subM;
+                        if ((subM = pTrim.match(/^Explored\\s+(\\d+)\\s+files?$/i))) {
+                            return (USE_TW ? '已探索 ' : '已探索 ') + subM[1] + (USE_TW ? ' 個檔案' : ' 个文件');
+                        }
+                        if (/^Explored\\s+files?$/i.test(pTrim)) {
+                            return USE_TW ? '已探索檔案' : '已探索文件';
+                        }
+                        if ((subM = pTrim.match(/^(?:Ran|ran)\\s+(\\d+)\\s+commands?$/i))) {
+                            return (USE_TW ? '已執行 ' : '已运行 ') + subM[1] + (USE_TW ? ' 條指令' : ' 条命令');
+                        }
+                        if (/^(?:Ran|ran)\\s+commands?$/i.test(pTrim)) {
+                            return USE_TW ? '已執行指令' : '已运行命令';
+                        }
+                        if ((subM = pTrim.match(/^(?:Edited|edited)\\s+(\\d+)\\s+files?$/i))) {
+                            return (USE_TW ? '已編輯 ' : '已编辑 ') + subM[1] + (USE_TW ? ' 個檔案' : ' 个文件');
+                        }
+                        if (/^(?:Edited|edited)\\s+files?$/i.test(pTrim)) {
+                            return USE_TW ? '已編輯檔案' : '已编辑文件';
+                        }
+                        if ((subM = pTrim.match(/^(?:Viewed|viewed)\\s+(\\d+)\\s+files?$/i))) {
+                            return (USE_TW ? '已檢視 ' : '已查看 ') + subM[1] + (USE_TW ? ' 個檔案' : ' 个文件');
+                        }
+                        if (/^(?:Viewed|viewed)\\s+files?$/i.test(pTrim)) {
+                            return USE_TW ? '已檢視檔案' : '已查看文件';
+                        }
+                        if ((subM = pTrim.match(/^(?:Read|read)\\s+(\\d+)\\s+files?$/i))) {
+                            return (USE_TW ? '已讀取 ' : '已读取 ') + subM[1] + (USE_TW ? ' 個檔案' : ' 个文件');
+                        }
+                        if (/^(?:Read|read)\\s+files?$/i.test(pTrim)) {
+                            return USE_TW ? '已讀取檔案' : '已读取文件';
+                        }
+                        return pTrim;
+                    };
+                    if (valNorm.includes(',')) {
+                        const parts = valNorm.split(',');
+                        const transParts = parts.map(translateSingleSummary);
+                        if (transParts.some((tp, idx) => tp !== parts[idx].trim())) {
+                            newVal = transParts.join('，');
+                        }
+                    } else {
+                        const single = translateSingleSummary(valNorm);
+                        if (single !== valNorm) newVal = single;
+                    }
                 } else if (/^The AlloyDB for PostgreSQL remote/i.test(valNorm)) {
                     newVal = USE_TW ? "AlloyDB for PostgreSQL 遠端 MCP 伺服器可讓您存取並執行 AlloyDB 工具，用於管理 AlloyDB 叢集及執行個體、管理使用者，以及建立和復原資料備份。" : "AlloyDB for PostgreSQL 远程 MCP 服务器可让您访问并运行 AlloyDB 工具，用于管理 AlloyDB 集群及实例、管理用户，以及创建和恢复数据备份。";
                 } else if (/^The Cloud SQL remote/i.test(valNorm)) {
